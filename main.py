@@ -1,61 +1,40 @@
-# ==== from connectivity matrix to edges ====
-def fromConnMat2Edges(conn_mat, label):
-    edge_index_tmp = [[], []]
-    edge_attr_tmp = []
-
-    for idx, itm in enumerate(conn_mat):
-        edge_index_tmp[0].extend([idx for i in range(idx+1, len(itm))])
-        edge_index_tmp[1].extend([i for i in range(idx+1, len(itm))])
-        for jdx in range(idx+1, len(itm)):
-            edge_attr_tmp.append([itm[jdx]])
-
-    edge_index = torch.tensor(edge_index_tmp, dtype=torch.long)
-    # where 0, 1 are the node indeces
-    # the shape of edge_index is [2, num_edges]
-
-    edge_attr = torch.tensor(edge_attr_tmp, dtype=torch.float)
-    # where the list items are the edge feature vectors
-    # the shape of edge_attr is [num_edges, num_edge_features]
-
-    x = torch.tensor([[1] for i in range(0, 90)], dtype=torch.float)
-    # where the list items are the node feature vectors
-    # the shape of x is [num_nodes, num_node_features]
-
-    y = torch.tensor([[label]], dtype=torch.float)
-
-    data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y)
-    return data
-
-# ==== load connectivity matrix from pickle ====
 import pickle
-
-with open('/workspace/test_pyg/bennyray_191007_347_bcn.pkl', 'rb') as pkl_file:
-        conn_mats = pickle.load(pkl_file)
-print(len(conn_mats))
-
-import torch
-from torch_geometric.data import Data
-
-data_list = []
-
-for subj in conn_mats.keys():
-    if subj[:2] == 'NC':
-        data_list.append(fromConnMat2Edges(conn_mats[subj], 0))
-    else:
-        data_list.append(fromConnMat2Edges(conn_mats[subj], 1))
-
-# ==== Create dataset with multiple data
-from torch_geometric.data import DataLoader
-
-loader = DataLoader(data_list, batch_size=32, shuffle=True)
-
-for batch in loader:
-    pass # do operations on batches
+import logging
+logging.basicConfig(level=logging.INFO, format='[%(asctime)s %(levelname)s] %(message)s')
 
 import torch
 import torch.nn.functional as F
-from torch_geometric.nn import GCNConv
-from torch_geometric.nn import global_mean_pool
+from torch_geometric.data import Data, DataLoader
+from torch_geometric.nn import GCNConv, global_mean_pool
+
+from utils.loader import fromConnMat2Edges
+
+# ==== load connectivity matrix from pickle ====
+with open('/workspace/schizo_graph_net/data/bennyray_191007_347_bcn.pkl', 'rb') as pkl_file:
+        conn_mats = pickle.load(pkl_file)
+logging.info('Data size: {:d}'.format(len(conn_mats)))
+
+train_data_list = []
+test_data_list = []
+nc_counter = 0
+sz_counter = 0
+for subj in conn_mats.keys():
+    if subj[:2] == 'NC':
+        if nc_counter < 150:
+            train_data_list.append(fromConnMat2Edges(conn_mats[subj], 0))
+        else:
+            test_data_list.append(fromConnMat2Edges(conn_mats[subj], 0))
+        nc_counter += 1
+    else:
+        if sz_counter < 100:
+            train_data_list.append(fromConnMat2Edges(conn_mats[subj], 1))
+        else:
+            test_data_list.append(fromConnMat2Edges(conn_mats[subj], 1))
+        sz_counter += 1
+
+# ==== Create dataset with multiple data
+train_loader = DataLoader(train_data_list, batch_size=32, shuffle=True)
+test_loader = DataLoader(test_data_list, batch_size=32, shuffle=False)
 
 class Net(torch.nn.Module):
     def __init__(self):
@@ -75,33 +54,41 @@ class Net(torch.nn.Module):
         return F.log_softmax(x, dim=1)
 
 if torch.cuda.is_available():
-    print('Using GPU')
+    logging.info('Using GPU')
 else:
-    print('Using CPU')
+    logging.info('Using CPU')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = Net().to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.2, weight_decay=5e-4)
 
-corrects = 0
-c = 0
-for batch in loader:
-    print('Computing batch ' + str(c))
-    data = batch.to(device)
-
+def train():
     model.train()
-    for epoch in range(5):
+
+    total_loss = 0
+    for data in train_loader:
+        data = data.to(device)
         optimizer.zero_grad()
         out = model(data)
         loss = F.nll_loss(out, data.y.long().squeeze())
         loss.backward()
+        total_loss += loss.item() * data.num_graphs
         optimizer.step()
-
-    model.eval()
-    _, pred = model(data).max(dim=1)
-    correct = float(pred.eq(data.y.t()[0].long()).sum().item())
-    corrects += correct
     
-    c += 1
+    return total_loss / len(train_data_list)
 
-acc = corrects / len(conn_mats)
-print('Accuracy: {:.4f}'.format(acc))
+def test():
+    model.eval()
+
+    correct = 0
+    for data in test_loader:
+        data = data.to(device)
+        with torch.no_grad():
+            pred = model(data).max(dim=1)[1]
+        correct += pred.eq(data.y.t()[0].long()).sum().item()
+    
+    return correct / len(test_data_list)
+
+for epoch in range(1, 81):
+    loss = train()
+    test_acc = test()
+    logging.info('Epoch {:02d}, Loss: {:.4f}, Test: {:.4f}'.format(epoch, loss, test_acc))

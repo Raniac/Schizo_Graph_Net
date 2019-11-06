@@ -1,6 +1,12 @@
+import time
 import pickle
 import logging
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s %(levelname)s] %(message)s')
+logging.basicConfig(level=logging.ERROR, format='[%(asctime)s %(levelname)s] %(message)s')
+logger = logging.getLogger()
+hdlr = logging.FileHandler('logs/train_val_' + time.strftime('%Y-%m-%d-%H-%M-%S') + '.log')
+hdlr.setFormatter(logging.Formatter('[%(asctime)s %(levelname)s] %(message)s'))
+logger.addHandler(hdlr)
 
 import torch
 import torch.nn.functional as F
@@ -59,7 +65,7 @@ else:
     logging.info('Using CPU')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = Net().to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.2, weight_decay=5e-4)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.05, weight_decay=5e-4)
 
 def train():
     model.train()

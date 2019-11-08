@@ -16,7 +16,7 @@ def plot_acc_loss(log_path):
         acc = float(line[acc_loc+6:acc_loc+12])
         acc_list.append(acc)
     
-    iters = range(len(acc_list))
+    iters = range(1, len(acc_list)+1)
     plt.figure()
     plt.plot(iters, acc_list, 'r', label='test_acc')
     plt.plot(iters, loss_list, 'b', label='train_loss')

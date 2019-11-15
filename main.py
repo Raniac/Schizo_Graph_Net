@@ -54,7 +54,7 @@ else:
     logging.info('Using CPU')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = Net_191106().to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-2)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.005)
 
 def train():
     model.train()
@@ -83,7 +83,7 @@ def test():
     
     return correct / len(test_data_list)
 
-for epoch in range(1, 21):
+for epoch in range(1, 201):
     loss = train()
     test_acc = test()
     logging.info('Epoch {:03d}, Loss: {:.4f}, Test: {:.4f}'.format(epoch, loss, test_acc))

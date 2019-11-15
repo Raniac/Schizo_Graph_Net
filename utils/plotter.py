@@ -27,5 +27,5 @@ def plot_acc_loss(log_path):
     plt.savefig(log_path[:-3] + 'png', dpi=300)
 
 if __name__ == "__main__":
-    log_path = 'logs/train_val_2019-11-06-08-18-16.log'
+    log_path = 'logs/train_val.log'
     plot_acc_loss(log_path)

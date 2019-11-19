@@ -1,3 +1,39 @@
+def fromPickle2Dataset(pkl_path):
+    """
+    :type pkl_path: String
+    :rtype train_dataset: List
+    :rtype test_dataset: List
+    """
+    import pickle
+    import logging
+    import random
+
+    with open(pkl_path, 'rb') as pkl_file:
+        conn_mats = pickle.load(pkl_file)
+    logging.info('Data size: {:d}'.format(len(conn_mats)))
+
+    train_dataset = []
+    test_dataset = []
+    nc_counter = 0
+    sz_counter = 0
+    conn_mats_keys = list(conn_mats.keys())
+    random.shuffle(conn_mats_keys)
+    for subj in conn_mats_keys:
+        if subj[:2] == 'NC':
+            if nc_counter < 150:
+                train_dataset.append(fromConnMat2Edges(conn_mats[subj], 0))
+            else:
+                test_dataset.append(fromConnMat2Edges(conn_mats[subj], 0))
+            nc_counter += 1
+        else:
+            if sz_counter < 100:
+                train_dataset.append(fromConnMat2Edges(conn_mats[subj], 1))
+            else:
+                test_dataset.append(fromConnMat2Edges(conn_mats[subj], 1))
+            sz_counter += 1
+
+    return train_dataset, test_dataset
+
 def fromConnMat2Edges(conn_mat, label):
     """
     :type conn_mat: List

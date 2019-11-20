@@ -64,7 +64,7 @@ def fromConnMat2Edges(conn_mat, label):
     # where the list items are the node feature vectors
     # the shape of x is [num_nodes, num_node_features]
 
-    y = torch.tensor([[label]], dtype=torch.long)
+    y = torch.tensor([label], dtype=torch.long)
 
     data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y)
     return data

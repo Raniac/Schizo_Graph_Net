@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch_geometric.transforms as T
-from torch_geometric.nn import GCNConv, global_mean_pool
+from torch_geometric.nn import GCNConv, global_mean_pool, global_max_pool
 
 from torch_geometric.utils import add_self_loops
 
@@ -37,6 +37,21 @@ class Net_191114(torch.nn.Module):
         x = self.conv1(x, edge_index)
         x = F.relu(x)
         x = F.dropout(x, training=self.training)
+        x = global_mean_pool(x, batch)
+
+        return F.log_softmax(x, dim=1)
+
+class Net_191120(torch.nn.Module):
+    def __init__(self):
+        super(Net_191120, self).__init__()
+        self.conv1 = GCNConv(1, 32)
+        self.conv2 = GCNConv(32, 8)
+
+    def forward(self, data):
+        x, edge_index, batch = data.x, data.edge_index, data.batch
+
+        x = self.conv1(x, edge_index)
+        x = self.conv2(x, edge_index)
         x = global_mean_pool(x, batch)
 
         return F.log_softmax(x, dim=1)

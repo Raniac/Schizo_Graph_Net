@@ -34,6 +34,7 @@ def train():
     model.train()
 
     total_loss = 0
+    correct = 0
     for data in train_loader:
         data = data.to(device)
         optimizer.zero_grad()
@@ -42,22 +43,33 @@ def train():
         loss.backward()
         total_loss += loss.item() * data.num_graphs
         optimizer.step()
+
+        correct += out.max(dim=1)[1].eq(data.y).sum().item()
+
+    train_loss = total_loss / len(train_dataset)
+    train_acc = correct / len(train_dataset)
     
-    return total_loss / len(train_dataset)
+    return train_loss, train_acc
 
 def test():
     model.eval()
 
+    total_loss = 0
     correct = 0
     for data in test_loader:
         data = data.to(device)
         with torch.no_grad():
-            pred = model(data).max(dim=1)[1]
-        correct += pred.eq(data.y).sum().item()
+            out = model(data)
+            loss = F.nll_loss(out, data.y)
+        total_loss += loss.item() * data.num_graphs
+        correct += out.max(dim=1)[1].eq(data.y).sum().item()
+
+    test_loss = total_loss / len(test_dataset)
+    test_acc = correct / len(test_dataset)
     
-    return correct / len(test_dataset)
+    return test_loss, test_acc
 
 for epoch in range(1, 101):
-    loss = train()
-    test_acc = test()
-    logging.info('Epoch {:03d}, Loss: {:.4f}, Test: {:.4f}'.format(epoch, loss, test_acc))
+    train_loss, train_acc = train()
+    test_loss, test_acc = test()
+    logging.info('Epoch {:03d}, Train Loss: {:.4f}, Train Accuracy: {:.4f}, Test Loss: {:.4f}, Test Accuracy: {:.4f}'.format(epoch, train_loss, train_acc, test_loss, test_acc))

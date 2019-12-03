@@ -14,11 +14,12 @@ from torch_geometric.data import Data, DataLoader
 from torch_geometric.nn import GCNConv, global_mean_pool
 from torch_geometric.utils import add_self_loops
 
-from utils.loader import fromPickle2Dataset
+from utils.loader import *
 from models import *
 
 # ==== Create dataset with multiple data
-train_dataset, test_dataset = fromPickle2Dataset('/workspace/schizo_graph_net/data/bennyray_191107_347_bcn.pkl')
+# train_dataset, test_dataset = fromPickle2Dataset('/workspace/schizo_graph_net/data/bennyray_191107_347_bcn.pkl')
+train_dataset, test_dataset = fromPickle2DatasetWithFeature('/workspace/schizo_graph_net/data/bennyray_191107_347_bcn.pkl', '/workspace/schizo_graph_net/data/RANIAC_181210_345_sfMRI_90.csv')
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
@@ -27,7 +28,7 @@ if torch.cuda.is_available():
 else:
     logging.info('Using CPU')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = Net_191120().to(device)
+model = Net_191202().to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.005)
 
 def train():

@@ -29,14 +29,14 @@ else:
     logging.info('Using CPU')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = Net_191202().to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.005)
+optimizer = torch.optim.Adam(model.parameters(), lr=4e-4)
 
-def train():
+def train(data_loader, data_size):
     model.train()
 
     total_loss = 0
     correct = 0
-    for data in train_loader:
+    for data in data_loader:
         data = data.to(device)
         optimizer.zero_grad()
         out = model(data)
@@ -47,30 +47,33 @@ def train():
 
         correct += out.max(dim=1)[1].eq(data.y).sum().item()
 
-    train_loss = total_loss / len(train_dataset)
-    train_acc = correct / len(train_dataset)
+    train_loss = total_loss / data_size
+    train_acc = correct / data_size
     
     return train_loss, train_acc
 
-def test():
+def test(data_loader, data_size):
     model.eval()
 
     total_loss = 0
     correct = 0
-    for data in test_loader:
+    for data in data_loader:
         data = data.to(device)
         with torch.no_grad():
             out = model(data)
             loss = F.nll_loss(out, data.y)
         total_loss += loss.item() * data.num_graphs
+        # print(out.max(dim=1)[1])
         correct += out.max(dim=1)[1].eq(data.y).sum().item()
 
-    test_loss = total_loss / len(test_dataset)
-    test_acc = correct / len(test_dataset)
+    test_loss = total_loss / data_size
+    test_acc = correct / data_size
     
     return test_loss, test_acc
 
 for epoch in range(1, 101):
-    train_loss, train_acc = train()
-    test_loss, test_acc = test()
+    train_loss, train_acc = train(train_loader, len(train_dataset))
+    test_loss, test_acc = test(test_loader, len(test_dataset))
     logging.info('Epoch {:03d}, Train Loss: {:.4f}, Train Accuracy: {:.4f}, Test Loss: {:.4f}, Test Accuracy: {:.4f}'.format(epoch, train_loss, train_acc, test_loss, test_acc))
+
+print(test(train_loader, len(train_dataset)))

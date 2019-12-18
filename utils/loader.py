@@ -43,9 +43,13 @@ def fromConnMat2Edges(conn_mat, label, node_feat):
     """
     import torch
     from torch_geometric.data import Data
+    import numpy as np
 
     edge_index_tmp = [[], []]
     edge_attr_tmp = []
+
+    conn_mat -= conn_mat.mean()
+    conn_mat /= conn_mat.std()
 
     for idx, itm in enumerate(conn_mat):
         edge_index_tmp[0].extend([idx for i in range(idx, len(itm))])

@@ -1,39 +1,3 @@
-def fromPickle2Dataset(pkl_path):
-    """
-    :type pkl_path: String
-    :rtype train_dataset: List
-    :rtype test_dataset: List
-    """
-    import pickle
-    import logging
-    import random
-
-    with open(pkl_path, 'rb') as pkl_file:
-        conn_mats = pickle.load(pkl_file)
-    logging.info('Data size: {:d}'.format(len(conn_mats)))
-
-    train_dataset = []
-    test_dataset = []
-    nc_counter = 0
-    sz_counter = 0
-    conn_mats_keys = list(conn_mats.keys())
-    random.shuffle(conn_mats_keys)
-    for subj in conn_mats_keys:
-        if subj[:2] == 'NC':
-            if nc_counter < 150:
-                train_dataset.append(fromConnMat2Edges(conn_mats[subj], 0, [[1] for i in range(90)]))
-            else:
-                test_dataset.append(fromConnMat2Edges(conn_mats[subj], 0, [[1] for i in range(90)]))
-            nc_counter += 1
-        else:
-            if sz_counter < 100:
-                train_dataset.append(fromConnMat2Edges(conn_mats[subj], 1, [[1] for i in range(90)]))
-            else:
-                test_dataset.append(fromConnMat2Edges(conn_mats[subj], 1, [[1] for i in range(90)]))
-            sz_counter += 1
-
-    return train_dataset, test_dataset
-
 def fromConnMat2Edges(conn_mat, label, node_feat):
     """
     :type conn_mat: List
@@ -73,6 +37,42 @@ def fromConnMat2Edges(conn_mat, label, node_feat):
 
     data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y)
     return data
+
+def fromPickle2Dataset(pkl_path):
+    """
+    :type pkl_path: String
+    :rtype train_dataset: List
+    :rtype test_dataset: List
+    """
+    import pickle
+    import logging
+    import random
+
+    with open(pkl_path, 'rb') as pkl_file:
+        conn_mats = pickle.load(pkl_file)
+    logging.info('Data size: {:d}'.format(len(conn_mats)))
+
+    train_dataset = []
+    test_dataset = []
+    nc_counter = 0
+    sz_counter = 0
+    conn_mats_keys = list(conn_mats.keys())
+    random.shuffle(conn_mats_keys)
+    for subj in conn_mats_keys:
+        if subj[:2] == 'NC':
+            if nc_counter < 150:
+                train_dataset.append(fromConnMat2Edges(conn_mats[subj], 0, [[1] for i in range(90)]))
+            else:
+                test_dataset.append(fromConnMat2Edges(conn_mats[subj], 0, [[1] for i in range(90)]))
+            nc_counter += 1
+        else:
+            if sz_counter < 100:
+                train_dataset.append(fromConnMat2Edges(conn_mats[subj], 1, [[1] for i in range(90)]))
+            else:
+                test_dataset.append(fromConnMat2Edges(conn_mats[subj], 1, [[1] for i in range(90)]))
+            sz_counter += 1
+
+    return train_dataset, test_dataset
 
 def fromPickle2DatasetWithFeature(pkl_path, feat_path):
     """
@@ -120,6 +120,96 @@ def fromPickle2DatasetWithFeature(pkl_path, feat_path):
                 train_dataset.append(fromConnMat2Edges(conn_mats[subj], 1, node_feat))
             else:
                 test_dataset.append(fromConnMat2Edges(conn_mats[subj], 1, node_feat))
+            sz_counter += 1
+
+    logging.info('Data size: {:d} train, {:d} test; {:d} NC, {:d} SZ.'.format(len(train_dataset), len(test_dataset), nc_counter, sz_counter))
+
+    return train_dataset, test_dataset
+
+def fromTxt2Dataset(txt_path):
+    """
+    :type txt_path: String
+    :rtype train_dataset: List
+    :rtype test_dataset: List
+    """
+    import numpy as np
+    import logging
+    import random
+    import os
+
+    train_dataset = []
+    test_dataset = []
+    nc_counter = 0
+    sz_counter = 0
+    txt_filename_list = os.listdir(txt_path)
+    random.shuffle(txt_filename_list)
+    for txt_filename in txt_filename_list:
+        conn_mat = np.loadtxt(txt_path + txt_filename)
+        subj = txt_filename[15:25]
+        if subj[:2] == 'NC':
+            if nc_counter < 150:
+                train_dataset.append(fromConnMat2Edges(conn_mat, 0, [[1] for i in range(90)]))
+            else:
+                test_dataset.append(fromConnMat2Edges(conn_mat, 0, [[1] for i in range(90)]))
+            nc_counter += 1
+        else:
+            if sz_counter < 100:
+                train_dataset.append(fromConnMat2Edges(conn_mat, 1, [[1] for i in range(90)]))
+            else:
+                test_dataset.append(fromConnMat2Edges(conn_mat, 1, [[1] for i in range(90)]))
+            sz_counter += 1
+
+    logging.info('Data size: {:d} train, {:d} test; {:d} NC, {:d} SZ.'.format(len(train_dataset), len(test_dataset), nc_counter, sz_counter))
+
+    return train_dataset, test_dataset
+
+def fromTxt2DatasetWithFeature(txt_path, feat_path):
+    """
+    :type txt_path: String
+    :type feat_path: String
+    :rtype train_dataset: List
+    :rtype test_dataset: List
+    """
+    import numpy as np
+    import pandas as pd
+    import logging
+    import random
+    import os
+
+    features = pd.read_csv(feat_path, index_col='ID').drop(['LABEL'], axis = 1)
+
+    train_dataset = []
+    test_dataset = []
+    nc_counter = 0
+    sz_counter = 0
+    txt_filename_list = os.listdir(txt_path)
+    random.shuffle(txt_filename_list)
+    for txt_filename in txt_filename_list:
+        conn_mat = np.loadtxt(txt_path + txt_filename)
+        subj = txt_filename[15:25]
+        if subj not in features.index.to_list():
+            continue
+        node_feat_all = features.loc[subj, :].to_list()
+        node_feat_gmv = node_feat_all[:90]
+        node_feat_reho = node_feat_all[90:180]
+        node_feat_alff = node_feat_all[180:270]
+        node_feat_dc = node_feat_all[270:]
+        node_feat = []
+        for idx in range(len(node_feat_gmv)):
+            node_feat.append([node_feat_gmv[idx], node_feat_reho[idx], node_feat_alff[idx], node_feat_dc[idx]])
+        if subj[:2] == 'NC':
+            if nc_counter < 100:
+                train_dataset.append(fromConnMat2Edges(conn_mat, 0, node_feat))
+            elif nc_counter >= 100 and nc_counter < 140:
+                test_dataset.append(fromConnMat2Edges(conn_mat, 0, node_feat))
+            else:
+                continue
+            nc_counter += 1
+        else:
+            if sz_counter < 100:
+                train_dataset.append(fromConnMat2Edges(conn_mat, 1, node_feat))
+            else:
+                test_dataset.append(fromConnMat2Edges(conn_mat, 1, node_feat))
             sz_counter += 1
 
     logging.info('Data size: {:d} train, {:d} test; {:d} NC, {:d} SZ.'.format(len(train_dataset), len(test_dataset), nc_counter, sz_counter))

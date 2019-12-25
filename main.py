@@ -30,7 +30,7 @@ if torch.cuda.is_available():
 else:
     logging.info('Using CPU')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = Net_191202().to(device)
+model = Net_191225().to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
 def train(data_loader, data_size):

@@ -10,6 +10,7 @@ logger.addHandler(hdlr)
 
 import torch
 import torch.nn.functional as F
+from torch.optim import lr_scheduler
 from torch_geometric.data import Data, DataLoader
 from torch_geometric.nn import GCNConv, global_mean_pool
 from torch_geometric.utils import add_self_loops
@@ -31,7 +32,9 @@ else:
     logging.info('Using CPU')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = Net_191225().to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
+# TODO add learning-rate scheduler.
+scheduler = lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
 
 def train(data_loader, data_size):
     model.train()
@@ -78,6 +81,7 @@ def test(data_loader, data_size):
     return test_loss, test_acc, test_out
 
 for epoch in range(1, 401):
+    scheduler.step()
     train_loss, train_acc = train(train_loader, len(train_dataset))
     test_loss, test_acc, _ = test(test_loader, len(test_dataset))
     logging.info('Epoch {:03d}, Train Loss: {:.4f}, Train Accuracy: {:.4f}, Test Loss: {:.4f}, Test Accuracy: {:.4f}'.format(epoch, train_loss, train_acc, test_loss, test_acc))

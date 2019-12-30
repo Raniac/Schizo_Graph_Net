@@ -32,9 +32,9 @@ else:
     logging.info('Using CPU')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = Net_191225().to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-1)
 # TODO add learning-rate scheduler.
-scheduler = lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
+scheduler = lr_scheduler.StepLR(optimizer, step_size=60, gamma=0.1)
 
 def train(data_loader, data_size):
     model.train()
@@ -80,7 +80,7 @@ def test(data_loader, data_size):
     
     return test_loss, test_acc, test_out
 
-for epoch in range(1, 401):
+for epoch in range(1, 241):
     scheduler.step()
     train_loss, train_acc = train(train_loader, len(train_dataset))
     test_loss, test_acc, _ = test(test_loader, len(test_dataset))

@@ -12,6 +12,7 @@ def fromConnMat2Edges(conn_mat, label, node_feat):
     edge_index_tmp = [[], []]
     edge_attr_tmp = []
 
+    ## data preprocessing
     conn_mat -= conn_mat.mean()
     conn_mat /= conn_mat.std()
 

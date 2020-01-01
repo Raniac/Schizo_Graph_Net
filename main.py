@@ -28,7 +28,7 @@ LR_STEP_SIZE  = 60
 LR_GAMMA      = 0.2
 NUM_EPOCHS    = 200
 
-## Ensure reproducibility
+## Ensure reproducibility, refering to https://blog.csdn.net/hyk_1996/article/details/84307108
 random.seed(SEED)
 np.random.seed(SEED)
 torch.manual_seed(SEED)

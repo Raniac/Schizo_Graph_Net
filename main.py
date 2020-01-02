@@ -21,12 +21,12 @@ from utils.loader import *
 from models import *
 
 ## Hyper-parameter setting
-SEED          = 1
-BATCH_SIZE    = 32
-LEARNING_RATE = 5e-2
-LR_STEP_SIZE  = 60
-LR_GAMMA      = 0.2
-NUM_EPOCHS    = 200
+SEED          = 1 # seed for random state
+BATCH_SIZE    = 32 # batch size of data loader
+LEARNING_RATE = 5e-2 # initial learning rate
+LR_STEP_SIZE  = 60 # epochs before each lr decay
+LR_GAMMA      = 0.2 # multiplied by for lr decay
+NUM_EPOCHS    = 300 # number of epochs for training
 
 ## Ensure reproducibility, refering to https://blog.csdn.net/hyk_1996/article/details/84307108
 random.seed(SEED)
@@ -50,6 +50,7 @@ else:
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = Net_191225().to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+
 ## learning-rate scheduler.
 scheduler = lr_scheduler.StepLR(optimizer, step_size=LR_STEP_SIZE, gamma=LR_GAMMA)
 
@@ -103,6 +104,7 @@ for epoch in range(1, NUM_EPOCHS+1):
     test_loss, test_acc, _ = test(test_loader, len(test_dataset))
     logging.info('Epoch {:03d}, Train Loss: {:.4f}, Train Accuracy: {:.4f}, Test Loss: {:.4f}, Test Accuracy: {:.4f}'.format(epoch, train_loss, train_acc, test_loss, test_acc))
 
+## checking final test results
 test_loss, test_acc, test_out = test(test_loader, len(test_dataset))
 test_check = []
 for idx in range(len(test_out[0])):

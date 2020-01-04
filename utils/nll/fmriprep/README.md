@@ -3,7 +3,12 @@
 ## Getting Started
 
 ```bash
-fmriprep data/bids_root/ out/ participant -w work/
+docker run -ti --rm \
+    -v path/to/data:/data:ro \
+    -v path/to/output:/out \
+    poldracklab/fmriprep:<latest-version> \
+    /data /out/out \
+    participant
 ```
 
 For further information, visit [Documentation of fMRIPrep](https://fmriprep.readthedocs.io/).

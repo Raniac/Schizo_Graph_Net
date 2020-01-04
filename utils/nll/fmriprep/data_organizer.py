@@ -1,2 +1,2 @@
-def data4fmriprep():
+def bids_organizer():
     pass

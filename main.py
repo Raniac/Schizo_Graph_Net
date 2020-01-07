@@ -7,6 +7,7 @@ hdlr = logging.FileHandler('logs/train_val.log')
 # hdlr = logging.FileHandler('logs/train_val_' + time.strftime('%Y-%m-%d-%H-%M-%S') + '.log')
 hdlr.setFormatter(logging.Formatter('[%(asctime)s %(levelname)s] %(message)s'))
 logger.addHandler(hdlr)
+import argparse
 import random
 import numpy as np
 
@@ -20,13 +21,23 @@ from torch_geometric.utils import add_self_loops
 from utils.loader import *
 from models import *
 
+parser = argparse.ArgumentParser(description='SGNMain')
+parser.add_argument('--data_path', dest='data_path', required=True)
+parser.add_argument('--batch_size', dest='batch_size', default=32)
+parser.add_argument('--learning_rate', dest='learning_rate', default=5e-2)
+parser.add_argument('--num_epochs', dest='num_epochs', default=200)
+parser.add_argument('--lr_step_size', dest='lr_step_size', default=60)
+parser.add_argument('--lr_decay', dest='lr_decay', default=0.2)
+args = parser.parse_args()
+
 ## Hyper-parameter setting
 SEED          = 1 # seed for random state
-BATCH_SIZE    = 32 # batch size of data loader
-LEARNING_RATE = 5e-2 # initial learning rate
-LR_STEP_SIZE  = 60 # epochs before each lr decay
-LR_GAMMA      = 0.2 # multiplied by for lr decay
-NUM_EPOCHS    = 300 # number of epochs for training
+DATA_PATH     = args.data_path # where to locate the data
+BATCH_SIZE    = args.batch_size # batch size of data loader
+LEARNING_RATE = args.learning_rate # initial learning rate
+LR_STEP_SIZE  = args.lr_step_size # epochs before each lr decay
+LR_DECAY      = args.lr_decay # multiplied by for lr decay
+NUM_EPOCHS    = args.num_epochs # number of epochs for training
 
 ## Ensure reproducibility, refering to https://blog.csdn.net/hyk_1996/article/details/84307108
 random.seed(SEED)
@@ -38,7 +49,7 @@ torch.cuda.manual_seed_all(SEED)
 # train_dataset, test_dataset = fromPickle2Dataset('/workspace/schizo_graph_net/data/bennyray_191107_347_bcn.pkl')
 # train_dataset, test_dataset = fromPickle2DatasetWithFeature('/workspace/schizo_graph_net/data/bennyray_191107_347_bcn.pkl', '/workspace/schizo_graph_net/data/RANIAC_181210_345_sfMRI_90.csv')
 # train_dataset, test_dataset = fromTxt2Dataset('/workspace/schizo_graph_net/data/ByDPABI/')
-train_dataset, test_dataset = fromTxt2DatasetWithFeature('/workspace/schizo_graph_net/data/test_dpabi/', '/workspace/schizo_graph_net/data/RANIAC_181210_345_sfMRI_90.csv')
+train_dataset, test_dataset = fromTxt2DatasetWithFeature(DATA_PATH + '/workspace/schizo_graph_net/data/test_dpabi/', DATA_PATH + '/workspace/schizo_graph_net/data/RANIAC_181210_345_sfMRI_90.csv')
 
 train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
@@ -52,7 +63,7 @@ model = Net_191225().to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
 ## learning-rate scheduler.
-scheduler = lr_scheduler.StepLR(optimizer, step_size=LR_STEP_SIZE, gamma=LR_GAMMA)
+scheduler = lr_scheduler.StepLR(optimizer, step_size=LR_STEP_SIZE, gamma=LR_DECAY)
 
 def train(data_loader, data_size):
     model.train()

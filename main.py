@@ -1,12 +1,5 @@
 import time
 import logging
-logging.basicConfig(level=logging.INFO, format='[%(asctime)s %(levelname)s] %(message)s')
-logging.basicConfig(level=logging.ERROR, format='[%(asctime)s %(levelname)s] %(message)s')
-logger = logging.getLogger()
-hdlr = logging.FileHandler('logs/train_val.log')
-# hdlr = logging.FileHandler('logs/train_val_' + time.strftime('%Y-%m-%d-%H-%M-%S') + '.log')
-hdlr.setFormatter(logging.Formatter('[%(asctime)s %(levelname)s] %(message)s'))
-logger.addHandler(hdlr)
 import argparse
 import random
 import numpy as np
@@ -23,6 +16,7 @@ from models import *
 
 parser = argparse.ArgumentParser(description='SGNMain')
 parser.add_argument('--data_path', dest='data_path', required=True)
+parser.add_argument('--log_path', dest='log_path', default='logs/train_val.log')
 parser.add_argument('--batch_size', dest='batch_size', default=32)
 parser.add_argument('--learning_rate', dest='learning_rate', default=5e-2)
 parser.add_argument('--num_epochs', dest='num_epochs', default=200)
@@ -33,11 +27,21 @@ args = parser.parse_args()
 ## Hyper-parameter setting
 SEED          = 1 # seed for random state
 DATA_PATH     = args.data_path # where to locate the data
+LOG_PATH      = args.log_path # where to save the log
 BATCH_SIZE    = args.batch_size # batch size of data loader
 LEARNING_RATE = args.learning_rate # initial learning rate
 LR_STEP_SIZE  = args.lr_step_size # epochs before each lr decay
 LR_DECAY      = args.lr_decay # multiplied by for lr decay
 NUM_EPOCHS    = args.num_epochs # number of epochs for training
+
+## Configure logging
+logging.basicConfig(level=logging.INFO, format='[%(asctime)s %(levelname)s] %(message)s')
+logging.basicConfig(level=logging.ERROR, format='[%(asctime)s %(levelname)s] %(message)s')
+logger = logging.getLogger()
+hdlr = logging.FileHandler(LOG_PATH)
+# hdlr = logging.FileHandler('logs/train_val_' + time.strftime('%Y-%m-%d-%H-%M-%S') + '.log')
+hdlr.setFormatter(logging.Formatter('[%(asctime)s %(levelname)s] %(message)s'))
+logger.addHandler(hdlr)
 
 ## Ensure reproducibility, refering to https://blog.csdn.net/hyk_1996/article/details/84307108
 random.seed(SEED)

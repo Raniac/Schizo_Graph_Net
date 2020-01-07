@@ -15,6 +15,10 @@ root@d0f1e42bb63f:/workspace/schizo_graph_net$ python main.py
 
 The code in this repository provides the implementation of graph-neural-network-based discriminative analysis of Schizophrenia with brain connectivity network data.
 
+## Dockerized SGN
+
+We have dockerized SGN as a service, which can be utilized by [NEURO-LEARN](https://github.com/Raniac/NEURO-LEARN). Create a new deep learning task with NEURO-LEARN and see!
+
 ## Contact
 
 Should you encouter any problems, please feel free to file an issue or contact leibingye@outlook.com.

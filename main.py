@@ -28,11 +28,11 @@ args = parser.parse_args()
 SEED          = 1 # seed for random state
 DATA_PATH     = args.data_path # where to locate the data
 LOG_PATH      = args.log_path # where to save the log
-BATCH_SIZE    = args.batch_size # batch size of data loader
-LEARNING_RATE = args.learning_rate # initial learning rate
-LR_STEP_SIZE  = args.lr_step_size # epochs before each lr decay
-LR_DECAY      = args.lr_decay # multiplied by for lr decay
-NUM_EPOCHS    = args.num_epochs # number of epochs for training
+BATCH_SIZE    = int(args.batch_size) # batch size of data loader
+LEARNING_RATE = float(args.learning_rate) # initial learning rate
+LR_STEP_SIZE  = int(args.lr_step_size) # epochs before each lr decay
+LR_DECAY      = float(args.lr_decay) # multiplied by for lr decay
+NUM_EPOCHS    = int(args.num_epochs) # number of epochs for training
 
 ## Configure logging
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s %(levelname)s] %(message)s')

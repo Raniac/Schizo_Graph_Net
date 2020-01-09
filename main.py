@@ -22,6 +22,7 @@ parser.add_argument('--learning_rate', dest='learning_rate', default=5e-2)
 parser.add_argument('--num_epochs', dest='num_epochs', default=200)
 parser.add_argument('--lr_step_size', dest='lr_step_size', default=60)
 parser.add_argument('--lr_decay', dest='lr_decay', default=0.2)
+parser.add_argument('--model_name', dest='model_name', required=True)
 args = parser.parse_args()
 
 ## Hyper-parameter setting
@@ -33,6 +34,7 @@ LEARNING_RATE = float(args.learning_rate) # initial learning rate
 LR_STEP_SIZE  = int(args.lr_step_size) # epochs before each lr decay
 LR_DECAY      = float(args.lr_decay) # multiplied by for lr decay
 NUM_EPOCHS    = int(args.num_epochs) # number of epochs for training
+MODEL_NAME    = 'models/' + args.model_name + '.pkl' # name of the model
 
 ## Configure logging
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s %(levelname)s] %(message)s')
@@ -132,3 +134,6 @@ for idx in range(len(test_out[0])):
 print(test_out[0])
 print(test_out[1])
 print(test_check)
+
+## TODO save model and parameters to pickle, referring to https://blog.csdn.net/fendoubasaonian/article/details/88552370
+torch.save(model, MODEL_NAME)

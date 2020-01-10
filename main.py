@@ -65,7 +65,8 @@ if torch.cuda.is_available():
 else:
     logging.info('Using CPU')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = Net_191225().to(device)
+# model = Net_191225().to(device)
+model = torch.load('models/baseline.pkl')
 optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
 ## learning-rate scheduler.

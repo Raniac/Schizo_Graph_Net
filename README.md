@@ -17,7 +17,7 @@ The code in this repository provides the implementation of graph-neural-network-
 
 ## Dockerized SGN
 
-We have dockerized SGN as a service, which can be utilized by [NEURO-LEARN](https://github.com/Raniac/NEURO-LEARN). Create a new deep learning task with NEURO-LEARN and see!
+We have dockerized SGN as a service (see [NEURO-LEARN-DOCKER-SGN](https://github.com/Raniac/NEURO-LEARN-DOCKER-SGN)), which can be utilized by [NEURO-LEARN](https://github.com/Raniac/NEURO-LEARN). Create a new deep learning task with NEURO-LEARN and see!
 
 ## Contact
 

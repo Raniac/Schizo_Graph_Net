@@ -3,7 +3,7 @@
 def sparsifyConnMat(conn_mat, sparsity):
     import numpy as np
     # compute threshold using sparsity
-    sparsity = 0.1
+    sparsity = 0.01
     edges = conn_mat[np.triu(conn_mat, 1) != 0]
     threshold = np.percentile(abs(edges), (1 - sparsity) * 100)  # 网络取绝对值，找到阈值
     return threshold

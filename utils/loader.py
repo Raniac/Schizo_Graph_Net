@@ -1,3 +1,13 @@
+## Data Loader
+
+def sparsifyConnMat(conn_mat, sparsity):
+    import numpy as np
+    # compute threshold using sparsity
+    sparsity = 0.1
+    edges = conn_mat[np.triu(conn_mat, 1) != 0]
+    threshold = np.percentile(abs(edges), (1 - sparsity) * 100)  # 网络取绝对值，找到阈值
+    return threshold
+
 def fromConnMat2Edges(conn_mat, label, node_feat):
     """
     :type conn_mat: List
@@ -15,12 +25,13 @@ def fromConnMat2Edges(conn_mat, label, node_feat):
     ## data preprocessing
     conn_mat -= conn_mat.mean()
     conn_mat /= conn_mat.std()
-
-    for idx, itm in enumerate(conn_mat):
-        edge_index_tmp[0].extend([idx for i in range(idx, len(itm))])
-        edge_index_tmp[1].extend([i for i in range(idx, len(itm))])
-        for jdx in range(idx, len(itm)):
-            edge_attr_tmp.append([itm[jdx]])
+    threshold = sparsifyConnMat(conn_mat, 0.1)
+    
+    for i in range(len(conn_mat)):
+        for j in range(i + 1, len(conn_mat[0])):
+            if abs(conn_mat[i][j]) > threshold:
+                edge_index_tmp[0].append(i)
+                edge_index_tmp[1].append(j)
 
     edge_index = torch.tensor(edge_index_tmp, dtype=torch.long)
     # where 0, 1 are the node indeces

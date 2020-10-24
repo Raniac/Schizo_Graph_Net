@@ -21,7 +21,7 @@ parser.add_argument('--batch_size', dest='batch_size', default=32)
 parser.add_argument('--learning_rate', dest='learning_rate', default=5e-2)
 parser.add_argument('--num_epochs', dest='num_epochs', default=200)
 parser.add_argument('--lr_step_size', dest='lr_step_size', default=60)
-parser.add_argument('--lr_decay', dest='lr_decay', default=0.2)
+parser.add_argument('--lr_decay', dest='lr_decay', default=0.1)
 parser.add_argument('--model_name', dest='model_name', required=True)
 args = parser.parse_args()
 
@@ -65,8 +65,8 @@ if torch.cuda.is_available():
 else:
     logging.info('Using CPU')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-# model = Net_191225().to(device)
-model = torch.load('models/baseline.pkl')
+model = GCNNet().to(device)
+# model = torch.load('models/baseline.pkl')
 optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
 ## learning-rate scheduler.
@@ -80,7 +80,7 @@ def train(data_loader, data_size):
     for data in data_loader:
         data = data.to(device)
         optimizer.zero_grad()
-        out = model(data)
+        out, _ = model(data)
         loss = F.nll_loss(out, data.y)
         loss.backward()
         total_loss += loss.item() * data.num_graphs
@@ -103,7 +103,7 @@ def test(data_loader, data_size):
     for data in data_loader:
         data = data.to(device)
         with torch.no_grad():
-            out = model(data)
+            out, _ = model(data)
             loss = F.nll_loss(out, data.y)
         total_loss += loss.item() * data.num_graphs
         predicted_y.extend(out.max(dim=1)[1])
@@ -137,4 +137,4 @@ print(test_out[1])
 print(test_check)
 
 ## TODO save model and parameters to pickle, referring to https://blog.csdn.net/fendoubasaonian/article/details/88552370
-torch.save(model, MODEL_NAME)
+# torch.save(model, MODEL_NAME)

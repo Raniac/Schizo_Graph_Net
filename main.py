@@ -55,7 +55,7 @@ torch.cuda.manual_seed_all(SEED)
 # train_dataset, test_dataset = fromPickle2Dataset('/workspace/schizo_graph_net/data/bennyray_191107_347_bcn.pkl')
 # train_dataset, test_dataset = fromPickle2DatasetWithFeature('/workspace/schizo_graph_net/data/bennyray_191107_347_bcn.pkl', '/workspace/schizo_graph_net/data/RANIAC_181210_345_sfMRI_90.csv')
 # train_dataset, test_dataset = fromTxt2Dataset('/workspace/schizo_graph_net/data/ByDPABI/')
-train_dataset, test_dataset = fromTxt2DatasetWithFeature(DATA_PATH + '/workspace/schizo_graph_net/data/test_dpabi/', DATA_PATH + '/workspace/schizo_graph_net/data/RANIAC_181210_345_sfMRI_90.csv')
+train_dataset, test_dataset = fromTxt2DatasetWithFeature(DATA_PATH + '/workspace/data/test_dpabi/', DATA_PATH + '/workspace/data/RANIAC_181210_345_sfMRI_90.csv')
 
 train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)

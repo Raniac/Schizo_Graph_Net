@@ -86,7 +86,10 @@ def train(data_loader, data_size):
     for data in data_loader:
         data = data.to(device)
         optimizer.zero_grad()
-        out, _ = model(data)
+        if args.model == 'GCN':
+            out, _ = model(data)
+        else:
+            out = model(data)
         loss = F.nll_loss(out, data.y)
         loss.backward()
         total_loss += loss.item() * data.num_graphs
@@ -109,7 +112,10 @@ def test(data_loader, data_size):
     for data in data_loader:
         data = data.to(device)
         with torch.no_grad():
-            out, _ = model(data)
+            if args.model == 'GCN':
+                out, _ = model(data)
+            else:
+                out = model(data)
             loss = F.nll_loss(out, data.y)
         total_loss += loss.item() * data.num_graphs
         predicted_y.extend(out.max(dim=1)[1])
@@ -141,6 +147,17 @@ for idx in range(len(test_out[0])):
 print(test_out[0])
 print(test_out[1])
 print(test_check)
+
+from sklearn.metrics import confusion_matrix
+tn, fp, fn, tp = confusion_matrix(test_out[1], test_out[0]).ravel()
+cnf_accuracy = (tn + tp) / (tn + fp + fn + tp)
+test_accuracy = cnf_accuracy
+cnf_sensitivity = tp / (tp + fn)
+test_sensitivity = cnf_sensitivity
+cnf_specificity = tn / (tn + fp)
+test_specificity = cnf_specificity
+
+logging.info('Acc: %.4f, Sen: %.4f, Spe: %.4f' % (test_accuracy, test_sensitivity, test_specificity))
 
 ## TODO save model and parameters to pickle, referring to https://blog.csdn.net/fendoubasaonian/article/details/88552370
 # torch.save(model, MODEL_NAME)

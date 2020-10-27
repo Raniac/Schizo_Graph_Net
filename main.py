@@ -22,7 +22,8 @@ parser.add_argument('--learning_rate', dest='learning_rate', default=5e-2)
 parser.add_argument('--num_epochs', dest='num_epochs', default=200)
 parser.add_argument('--lr_step_size', dest='lr_step_size', default=50)
 parser.add_argument('--lr_decay', dest='lr_decay', default=0.1)
-parser.add_argument('--model_name', dest='model_name', required=True)
+parser.add_argument('--model_name', dest='model_name', default='test')
+parser.add_argument('--model', dest='model', default='GCN')
 args = parser.parse_args()
 
 ## Hyper-parameter setting
@@ -65,8 +66,13 @@ if torch.cuda.is_available():
 else:
     logging.info('Using CPU')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = GCNNet().to(device)
-# model = torch.load('models/baseline.pkl')
+models = {
+    'GCN': GCNNet().to(device),
+    'GAT': GATNet().to(device),
+    'GIN': GIN().to(device),
+    # 'PreTrained': torch.load('models/baseline.pkl')
+}
+model = models[args.model]
 optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
 ## learning-rate scheduler.

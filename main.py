@@ -150,12 +150,9 @@ print(test_check)
 
 from sklearn.metrics import confusion_matrix
 tn, fp, fn, tp = confusion_matrix(test_out[1], test_out[0]).ravel()
-cnf_accuracy = (tn + tp) / (tn + fp + fn + tp)
-test_accuracy = cnf_accuracy
-cnf_sensitivity = tp / (tp + fn)
-test_sensitivity = cnf_sensitivity
-cnf_specificity = tn / (tn + fp)
-test_specificity = cnf_specificity
+test_accuracy = (tn + tp) / (tn + fp + fn + tp)
+test_sensitivity = tp / (tp + fn)
+test_specificity = tn / (tn + fp)
 
 logging.info('Acc: %.4f, Sen: %.4f, Spe: %.4f' % (test_accuracy, test_sensitivity, test_specificity))
 
